@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow.keras.preprocessing import image  # type: ignore
 from io import BytesIO
 from PIL import Image
-import gdown # type: ignore
+import gdown  # type: ignore
 
 # Disable oneDNN warning before importing TensorFlow
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -16,28 +16,28 @@ app = FastAPI()
 # Enable CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL in production
+    allow_origins=["*"],  # Change this to frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Google Drive Model Download Configuration
-MODEL_ID = "1_qSNaUeNmle2DpCBqrEIWdsF3RBmAt6k"  # Extracted from your Google Drive link
+MODEL_ID = "1_qSNaUeNmle2DpCBqrEIWdsF3RBmAt6k"  # Replace with your model ID
 MODEL_URL = f"https://drive.google.com/uc?id={MODEL_ID}"
 MODEL_PATH = "crop_disease_model.h5"
 
-# Download the model if not present
+# Download model if not present
 if not os.path.exists(MODEL_PATH):
     print("Downloading model from Google Drive...")
     gdown.download(MODEL_URL, MODEL_PATH, quiet=False, fuzzy=True)
 
 # Load the trained TensorFlow model with error handling
 try:
-    model = tf.keras.models.load_model(MODEL_PATH)
-    print("Model loaded successfully!")
+    model = tf.keras.models.load_model(MODEL_PATH, compile=False)  # Ignore compile errors
+    print("✅ Model loaded successfully!")
 except Exception as e:
-    print(f"Error loading model: {e}")
+    print(f"❌ Error loading model: {e}")
     model = None  # Handle model loading failure
 
 # Define class labels
@@ -57,7 +57,7 @@ CLASS_LABELS = {
 
 @app.get("/")
 def home():
-    return {"message": "FastAPI Server is Running!"}
+    return {"message": "✅ FastAPI Server is Running!"}
 
 def preprocess_image(image_file):
     """Preprocess the uploaded image for model prediction."""
@@ -68,26 +68,26 @@ def preprocess_image(image_file):
         img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
         return img_array
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Image processing error: {e}")
+        raise HTTPException(status_code=400, detail=f"❌ Image processing error: {e}")
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """Handle image uploads and return crop disease predictions."""
     if model is None:
-        raise HTTPException(status_code=500, detail="Model is not loaded")
+        raise HTTPException(status_code=500, detail="❌ Model is not loaded")
 
     MAX_FILE_SIZE_MB = 5  # Set max file size limit (MB)
     contents = await file.read()
 
     if len(contents) > MAX_FILE_SIZE_MB * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="File size exceeds 5MB limit")
+        raise HTTPException(status_code=413, detail="❌ File size exceeds 5MB limit")
 
     try:
         img_array = preprocess_image(contents)  # Preprocess image
         prediction = model.predict(img_array)  # Get model prediction
 
         if prediction is None or len(prediction) == 0:
-            raise HTTPException(status_code=500, detail="Model did not return a valid prediction")
+            raise HTTPException(status_code=500, detail="❌ Model did not return a valid prediction")
 
         predicted_index = int(np.argmax(prediction))  # Get highest probability index
         predicted_label = CLASS_LABELS.get(predicted_index, "Unknown")  # Handle missing label
@@ -103,4 +103,5 @@ async def predict(file: UploadFile = File(...)):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"❌ Prediction error: {e}")
+
