@@ -25,7 +25,7 @@ app.add_middleware(
 # Google Drive Model Download Configuration
 MODEL_ID = "1_qSNaUeNmle2DpCBqrEIWdsF3RBmAt6k"  # Replace with your model ID
 MODEL_URL = f"https://drive.google.com/uc?id={MODEL_ID}"
-MODEL_PATH = "crop_disease_model.h5"
+MODEL_PATH = "fallback_model.h5"
 
 # Download model if not present
 if not os.path.exists(MODEL_PATH):
