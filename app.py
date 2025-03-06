@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # Google Drive Model Download Configuration
-MODEL_ID = "197iOhZyI89ykH5S548hWbJACXl3sRL-p"  # Replace with your model ID
+MODEL_ID = "1_qSNaUeNmle2DpCBqrEIWdsF3RBmAt6k"  # Replace with your model ID
 MODEL_URL = f"https://drive.google.com/uc?id={MODEL_ID}"
 MODEL_PATH = "fallback_model.h5"
 
